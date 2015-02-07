@@ -787,6 +787,12 @@ sub get_test_settings {
 		$testdir = "$dir/dbdpg_test_database";
 	}
 
+	## Allow forcing of ENV variables
+	if ($ENV{DBDPG_TEST_ALWAYS_ENV}) {
+		$testdsn = $ENV{DBI_DSN} || '';
+		$testuser = $ENV{DBI_USER} || '';
+	}
+
 	return $testdsn, $testuser, $helpconnect, $su, $uid, $testdir, $pg_ctl, $initdb, $error, $version;
 
 } ## end of get_test_settings
@@ -901,7 +907,6 @@ sub shutdown_test_database {
 	## Remove the test directory entirely
 	return if $ENV{DBDPG_TESTINITDB};
 	return if ! eval { require File::Path; 1; };
-	warn "Removing test database directory\n";
 	File::Path::rmtree($testdir);
 	return;
 
