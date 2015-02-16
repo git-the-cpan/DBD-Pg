@@ -16,7 +16,7 @@ use 5.008001;
 {
 	package DBD::Pg;
 
-	use version; our $VERSION = qv('3.5.0_1');
+	use version; our $VERSION = qv('3.5.0_2');
 
 	use DBI ();
 	use DynaLoader ();
@@ -1676,7 +1676,7 @@ DBD::Pg - PostgreSQL database driver for the DBI module
 
 =head1 VERSION
 
-This documents version 3.5.0_1 of the DBD::Pg module
+This documents version 3.5.0_2 of the DBD::Pg module
 
 =head1 DESCRIPTION
 
@@ -2445,7 +2445,7 @@ question mark character. This is the method recommended by the DBI specs and is 
 portable. Each question mark is internally replaced by a "dollar sign number" in the order
 in which they appear in the query (important when using L</bind_param>).
 
-The method second type of placeholder is "dollar sign numbers". This is the method
+The second type of placeholder is "dollar sign numbers". This is the method
 that Postgres uses internally and is overall probably the best method to use
 if you do not need compatibility with other database systems. DBD::Pg, like
 PostgreSQL, allows the same number to be used more than once in the query.
@@ -2738,7 +2738,7 @@ server version 9.0 or higher.
 
 The C<ping> method determines if there is a working connection to an active 
 database server. It does this by sending a small query to the server, currently 
-B<'DBD::Pg ping test v3.5.0_1'>. It returns 0 (false) if the connection is not valid, 
+B<'DBD::Pg ping test v3.5.0_2'>. It returns 0 (false) if the connection is not valid, 
 otherwise it returns a positive number (true). The value returned indicates the 
 current state:
 
@@ -3117,8 +3117,8 @@ PQexecParams to PQexecPrepared. In other words, when it will start using server-
 prepared statements (assuming all other requirements for them are met). The default value, 
 2, means that a prepared statement will be prepared and used the second and subsequent 
 time execute is called. To always use PQexecPrepared instead of PQexecParams, set 
-pg_switch_prepared to 1. Setting it to 0 will force DBD::Pg to use PQexecPrepared always - 
-this was the default behavior in versions older than 3.0.0.
+pg_switch_prepared to 1 (this was the default behavior in earlier versions). 
+Setting pg_switch_prepared to 0 will force DBD::Pg to always use PQexecParams.
 
 =head3 B<pg_placeholder_dollaronly> (boolean)
 

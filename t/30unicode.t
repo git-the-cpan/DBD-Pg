@@ -27,6 +27,7 @@ isnt ($dbh, undef, 'Connect to database for unicode testing');
 my @tests;
 
 my $server_encoding = $dbh->selectrow_array('SHOW server_encoding');
+my $client_encoding = $dbh->selectrow_array('SHOW client_encoding');
 
 # Beware, characters used for testing need to be known to Unicode version 4.0.0,
 # which is what perl 5.8.1 shipped with.
@@ -58,7 +59,6 @@ foreach (
 my %ranges = (
     UTF8 => qr/.*/,
     LATIN1 => qr/\A(?:ascii|latin 1 range)\z/,
-    SQL_ASCII => qr/nada/,
 );
 
 foreach (@tests) {
@@ -91,6 +91,10 @@ foreach (@tests) {
     ) {
         skip "Can't do $range tests with server_encoding='$server_encoding'", 1
             if $range !~ ($ranges{$server_encoding} || qr/\A(?:ascii)\z/);
+
+		skip 'Cannot perform range tests if client_encoding is not UTF8', 1
+			if $client_encoding ne 'UTF8';
+
         foreach my $enable_utf8 (1, 0, -1) {
             my $desc = "$state $range UTF-8 $test->{qtype} $type (pg_enable_utf8=$enable_utf8)";
             my @args = @{$test->{args} || []};
