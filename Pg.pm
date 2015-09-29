@@ -16,7 +16,7 @@ use 5.008001;
 {
 	package DBD::Pg;
 
-	use version; our $VERSION = qv('3.5.1');
+	use version; our $VERSION = qv('3.5.2');
 
 	use DBI ();
 	use DynaLoader ();
@@ -540,18 +540,20 @@ use 5.008001;
 				qq{conrelid = $aid AND conkey = '{$attnum}'};
 			my $info = $dbh->selectall_arrayref($SQL);
 			if (@$info) {
-				$row->[19] = $info->[0][0];
+				$row->[$col_map{pg_constraint}] = $info->[0][0];
 			}
 			else {
-				$row->[19] = undef;
+				$row->[$col_map{pg_constraint}] = undef;
 			}
 
 			if ( $typtype eq 'e' ) {
-				$SQL = "SELECT enumlabel FROM pg_catalog.pg_enum WHERE enumtypid = $typoid ORDER BY oid";
-				$row->[23] = $dbh->selectcol_arrayref($SQL);
+				my $order_column = $dbh->{private_dbdpg}{version} >= 90100
+					? 'enumsortorder' : 'oid';
+				$SQL = "SELECT enumlabel FROM pg_catalog.pg_enum WHERE enumtypid = $typoid ORDER BY $order_column";
+				$row->[$col_map{pg_enum_values}] = $dbh->selectcol_arrayref($SQL);
 			}
 			else {
-				$row->[23] = undef;
+				$row->[$col_map{pg_enum_values}] = undef;
 			}
 		}
 
@@ -1330,7 +1332,7 @@ use 5.008001;
    10021 => ['SQL_ASYNC_MODE',                      2                         ], ## SQL_AM_STATEMENT
      120 => ['SQL_BATCH_ROW_COUNT',                 2                         ], ## SQL_BRC_EXPLICIT
      121 => ['SQL_BATCH_SUPPORT',                   3                         ], ## 12 SELECT_PROC + ROW_COUNT_PROC
-       2 => ['SQL_DATA_SOURCE_NAME',                sub { sprintf 'dbi:Pg:%', shift->{Name} } ],
+       2 => ['SQL_DATA_SOURCE_NAME',                sub { sprintf 'dbi:Pg:%s', shift->{Name} } ],
        3 => ['SQL_DRIVER_HDBC',                     0                         ], ## not applicable
      135 => ['SQL_DRIVER_HDESC',                    0                         ], ## not applicable
        4 => ['SQL_DRIVER_HENV',                     0                         ], ## not applicable
@@ -1676,7 +1678,7 @@ DBD::Pg - PostgreSQL database driver for the DBI module
 
 =head1 VERSION
 
-This documents version 3.5.1 of the DBD::Pg module
+This documents version 3.5.2 of the DBD::Pg module
 
 =head1 DESCRIPTION
 
@@ -2738,7 +2740,7 @@ server version 9.0 or higher.
 
 The C<ping> method determines if there is a working connection to an active 
 database server. It does this by sending a small query to the server, currently 
-B<'DBD::Pg ping test v3.5.1'>. It returns 0 (false) if the connection is not valid, 
+B<'DBD::Pg ping test v3.5.2'>. It returns 0 (false) if the connection is not valid, 
 otherwise it returns a positive number (true). The value returned indicates the 
 current state:
 
@@ -4125,7 +4127,7 @@ COPY OUT mode by calling "COPY tablename TO STDOUT". Data is always returned
 one data row at a time. The first argument to pg_getcopydata 
 is the variable into which the data will be stored (this variable should not 
 be undefined, or it may throw a warning, although it may be a reference). The 
-pg_gecopydata method returns a number greater than 1 indicating the new size of 
+pg_getcopydata method returns a number greater than 1 indicating the new size of 
 the variable, or a -1 when the COPY has finished. Once a -1 has been returned, no 
 other action is necessary, as COPY mode will have already terminated. Example:
 
